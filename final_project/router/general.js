@@ -45,7 +45,6 @@ public_users.get('/author/:author', function (req, res) {
   let result = booksArr.find(book => book[1].author === author);
   if (result === undefined) return res.status(208).json(errorMessage(author))
 
-
   res.send(result);
 });
 
@@ -76,6 +75,63 @@ public_users.get('/review/:isbn', function (req, res) {
 
 
 //Functions using async/await
+public_users.get('/', function(req, res){
+  const get_books = new Promise((resolve , reject)=>{
+    resolve(res.send(JSON.stringify(books, null, 4)))
+  });
 
+  get_books.then(() => console.log("Lists of book returned!"));
+})
+
+// Get book details based on ISBN
+public_users.get('/isbn/:isbn', function (req, res) {
+  let { isbn } = req.params;
+
+  const get_book = new Promise((resolve, reject) => {
+    if (!isbn) reject(res.status(404).json({ message: "Error" }));
+    resolve(res.send(books[isbn]));
+  });
+
+  get_book.then(() => console.log('Serach by ISBN returned'))
+  .catch(() => console.log("Invalid ISBN"));
+});
+
+// Get book details based on author
+public_users.get('/author/:author', function (req, res) {
+  let { author } = req.params;
+
+  const get_book = new Promise((resolve, reject) => {
+    if (!author) reject(res.status(404).json({ message: "Error" }));
+
+    let booksArr = Object.entries(books);
+    let result = booksArr.find(book => book[1].author === author);
+    
+    if (result === undefined) reject(res.status(208).json(errorMessage(author)));
+
+    resolve( res.send(result));
+  });
+
+  get_book.then(() => console.log("search by author returned!"))
+  .catch(() => console.log("Invalid author"))
+});
+
+// Get all books based on title
+public_users.get('/title/:title', function (req, res) {
+  let { title } = req.params;
+
+  const get_book = new Promise((resolve, reject) =>{
+    if (!title) reject(res.status(404).json({ message: "Error" }));
+
+    let booksArr = Object.entries(books);
+    let result = booksArr.find(book => book[1].title === title);
+
+    if (result === undefined) reject(res.status(208).json(errorMessage(title)));
+
+    resolve(res.send(result));
+  })
+  
+  get_book.then(() => console.log("Search by title returned!"))
+  .catch(() => console.log("Invalid title"));
+  });
 
 module.exports.general = public_users;
